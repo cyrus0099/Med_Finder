@@ -105,7 +105,7 @@
                                         <h4 class="mb-1">{{ $medicine->name }}</h4>
                                         <div class="text-secondary">{{ $medicine->form ?: 'Medicine' }} {{ $medicine->strength }}</div>
                                     </div>
-                                    <span class="badge {{ $medicine->stock > 0 ? 'bg-success-subtle text-success-emphasis' : 'bg-danger-subtle text-danger-emphasis' }} h-fit">{{ $medicine->stock > 0 ? 'In stock' : 'Out of stock' }}</span>
+                                    <span class="badge {{ $medicine->status === 'available' && $medicine->stock > 0 ? 'bg-success-subtle text-success-emphasis' : 'bg-danger-subtle text-danger-emphasis' }} h-fit">{{ $medicine->status === 'available' && $medicine->stock > 0 ? 'In stock' : 'Out of stock' }}</span>
                                 </div>
                                 <div class="mb-2"><strong>Pharmacy:</strong> {{ $medicine->pharmacy?->name ?? 'Unknown pharmacy' }}</div>
                                 <div class="mb-2 text-secondary">{{ $medicine->pharmacy?->city }}{{ $medicine->pharmacy?->address ? ' - '.$medicine->pharmacy->address : '' }}</div>
