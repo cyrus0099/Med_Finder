@@ -88,7 +88,7 @@
                       {{ $medicine->pharmacy?->name ?? 'Unknown pharmacy' }}<br>
                       <small class="text-secondary">{{ $medicine->pharmacy?->city }}</small>
                     </td>
-                    <td>KES {{ number_format((float) $medicine->price, 2) }}</td>
+                    <td>UGX {{ number_format((float) $medicine->price, 2) }}</td>
                     <td>
                       @if ($medicine->status === 'available' && $medicine->stock > 0)
                         <form method="POST" action="{{ route('user.medicines.reserve', $medicine) }}" class="d-flex gap-2 align-items-center">

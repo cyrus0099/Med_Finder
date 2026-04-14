@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Pharmacy;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -45,6 +46,19 @@ class AuthenticationPagesTest extends TestCase
             'role' => 'pharmacy',
             'password' => 'password123',
         ]);
+        Pharmacy::create([
+            'user_id' => $user->id,
+            'name' => 'Login Test Pharmacy',
+            'city' => 'Nairobi',
+            'address' => 'Moi Avenue',
+            'phone' => '+254700999999',
+            'status' => 'approved',
+            'is_subscribed' => true,
+            'subscription_plan' => 'Standard',
+            'subscription_amount' => 5000,
+            'subscription_paid_at' => now(),
+            'subscribed_at' => now(),
+        ]);
 
         $response = $this->post('/login', [
             'email' => $user->email,
@@ -52,6 +66,32 @@ class AuthenticationPagesTest extends TestCase
         ]);
 
         $response->assertRedirect(route('pharmacy.dashboard'));
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_unsubscribed_pharmacy_is_redirected_to_subscription_notice_after_login(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'pharmacy',
+            'password' => 'password123',
+        ]);
+
+        Pharmacy::create([
+            'user_id' => $user->id,
+            'name' => 'Pending Pharmacy',
+            'city' => 'Nairobi',
+            'address' => 'Tom Mboya Street',
+            'phone' => '+254711111111',
+            'status' => 'pending',
+            'is_subscribed' => false,
+        ]);
+
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password123',
+        ]);
+
+        $response->assertRedirect(route('pharmacy.subscription-required'));
         $this->assertAuthenticatedAs($user);
     }
 

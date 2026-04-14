@@ -20,6 +20,8 @@
       <li class="nav-item"><a class="nav-link" href="{{ route('admin.dashboard') }}"><span class="text">Admin Overview</span></a></li>
     @elseif ($role === 'pharmacy')
       <li class="nav-item"><a class="nav-link" href="{{ route('pharmacy.dashboard') }}"><span class="text">Pharmacy Hub</span></a></li>
+      <li class="nav-item"><a class="nav-link" href="{{ route('pharmacy.adverts.index') }}"><span class="text">My Adverts</span></a></li>
+      <li class="nav-item"><a class="nav-link" href="{{ route('pharmacy.subscription-required') }}"><span class="text">Subscription</span></a></li>
     @elseif ($role === 'user')
       <li class="nav-item"><a class="nav-link" href="{{ route('user.dashboard') }}"><span class="text">Patient Dashboard</span></a></li>
     @endif
@@ -54,6 +56,8 @@
         <li class="nav-item"><a class="nav-link" href="{{ route('admin.dashboard') }}">Admin Overview</a></li>
       @elseif ($role === 'pharmacy')
         <li class="nav-item"><a class="nav-link" href="{{ route('pharmacy.dashboard') }}">Pharmacy Hub</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ route('pharmacy.adverts.index') }}">My Adverts</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ route('pharmacy.subscription-required') }}">Subscription</a></li>
       @elseif ($role === 'user')
         <li class="nav-item"><a class="nav-link" href="{{ route('user.dashboard') }}">Patient Dashboard</a></li>
       @endif

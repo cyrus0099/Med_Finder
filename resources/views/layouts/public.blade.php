@@ -54,6 +54,53 @@
             font-size: 0.8rem;
             font-weight: 700;
         }
+        .advert-stage {
+            position: relative;
+            overflow: hidden;
+            border-radius: 2rem;
+            border: 1px solid rgba(15,23,42,0.08);
+            background:
+                radial-gradient(circle at top right, rgba(251, 191, 36, 0.25), transparent 28%),
+                radial-gradient(circle at bottom left, rgba(14, 165, 233, 0.18), transparent 30%),
+                linear-gradient(145deg, #0f172a 0%, #134e4a 52%, #ecfeff 100%);
+            color: #f8fafc;
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+        }
+        .advert-stage::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px),
+                linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px);
+            background-size: 28px 28px;
+            opacity: 0.18;
+            pointer-events: none;
+        }
+        .advert-stage > * {
+            position: relative;
+            z-index: 1;
+        }
+        .advert-orbit-card {
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.15);
+            backdrop-filter: blur(12px);
+        }
+        .advert-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            color: #082f49;
+            background: #fef3c7;
+            border-radius: 999px;
+            padding: 0.85rem 1.1rem;
+            text-decoration: none;
+            font-weight: 700;
+        }
+        .advert-cta:hover {
+            color: #082f49;
+            background: #fde68a;
+        }
         footer {
             background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
             color: #dbeafe;

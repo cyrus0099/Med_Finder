@@ -78,6 +78,71 @@
         </div>
     </section>
 
+    @if ($featuredAdverts->isNotEmpty())
+        <section class="mb-5">
+            <div class="advert-stage p-4 p-lg-5">
+                <div class="row g-4 align-items-stretch">
+                    <div class="col-xl-6">
+                        @php $leadAdvert = $featuredAdverts->first(); @endphp
+                        <div class="h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="section-kicker text-white mb-3" style="color: #99f6e4 !important;">Pharmacy Spotlight</div>
+                                <h2 class="display-5 fw-bold mb-3">{{ $leadAdvert->title }}</h2>
+                                <p class="fs-5 mb-4 text-white-50">{{ $leadAdvert->content }}</p>
+                            </div>
+                            <div class="d-flex flex-wrap gap-3 align-items-center">
+                                @if ($leadAdvert->cta_link)
+                                    <a href="{{ $leadAdvert->cta_link }}" target="_blank" rel="noopener noreferrer" class="advert-cta">
+                                        View offer
+                                        <span aria-hidden="true">&rarr;</span>
+                                    </a>
+                                @endif
+                                <div class="small text-white-50">
+                                    <strong class="text-white">{{ $leadAdvert->pharmacy?->name ?? 'Featured pharmacy' }}</strong>
+                                    @if ($leadAdvert->pharmacy?->city)
+                                        in {{ $leadAdvert->pharmacy->city }}
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-6">
+                        <div class="row g-3 h-100">
+                            @foreach ($featuredAdverts as $index => $advert)
+                                <div class="{{ $index === 0 ? 'col-12' : 'col-md-6' }}">
+                                    <div class="advert-orbit-card rounded-4 p-4 h-100">
+                                        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                                            <div>
+                                                <div class="text-uppercase small text-white-50 mb-2">Ad campaign</div>
+                                                <h4 class="mb-1">{{ $advert->title }}</h4>
+                                            </div>
+                                            <span class="badge bg-light text-dark">Live</span>
+                                        </div>
+                                        <p class="mb-3 text-white-50">{{ \Illuminate\Support\Str::limit($advert->content, $index === 0 ? 150 : 90) }}</p>
+                                        <div class="small text-white-50 mb-3">
+                                            {{ $advert->pharmacy?->name ?? 'Unknown pharmacy' }}
+                                            @if ($advert->pharmacy?->city)
+                                                • {{ $advert->pharmacy->city }}
+                                            @endif
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center gap-3">
+                                            <small class="text-white-50">
+                                                {{ $advert->ends_at?->format('M d, Y') ? 'Ends '.$advert->ends_at->format('M d, Y') : 'Limited-time campaign' }}
+                                            </small>
+                                            @if ($advert->cta_link)
+                                                <a href="{{ $advert->cta_link }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-warning fw-semibold">Open</a>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    @endif
+
     @if ($searchQuery !== '')
         <section class="mb-5">
             <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-2 mb-4">
@@ -110,7 +175,7 @@
                                 <div class="mb-2"><strong>Pharmacy:</strong> {{ $medicine->pharmacy?->name ?? 'Unknown pharmacy' }}</div>
                                 <div class="mb-2 text-secondary">{{ $medicine->pharmacy?->city }}{{ $medicine->pharmacy?->address ? ' - '.$medicine->pharmacy->address : '' }}</div>
                                 <div class="d-flex justify-content-between align-items-center mt-4">
-                                    <span class="fw-bold">KES {{ number_format((float) $medicine->price, 2) }}</span>
+                                    <span class="fw-bold">UGX {{ number_format((float) $medicine->price, 2) }}</span>
                                     <small class="text-secondary">Stock: {{ number_format($medicine->stock) }}</small>
                                 </div>
                             </div>
@@ -151,7 +216,7 @@
                                 <div class="mb-2"><strong>Pharmacy:</strong> {{ $medicine->pharmacy?->name ?? 'Unknown pharmacy' }}</div>
                                 <div class="mb-2 text-secondary">{{ $medicine->pharmacy?->city }}{{ $medicine->pharmacy?->address ? ' - '.$medicine->pharmacy->address : '' }}</div>
                                 <div class="d-flex justify-content-between align-items-center mt-4">
-                                    <span class="fw-bold">KES {{ number_format((float) $medicine->price, 2) }}</span>
+                                    <span class="fw-bold">UGX {{ number_format((float) $medicine->price, 2) }}</span>
                                     <small class="text-secondary">Stock: {{ number_format($medicine->stock) }}</small>
                                 </div>
                             </div>

@@ -44,7 +44,7 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route($this->dashboardRouteFor(Auth::user()?->role)));
+        return redirect()->intended(route($this->dashboardRouteForUser(Auth::user())));
     }
 
     public function showRegister(): View
@@ -110,18 +110,33 @@ class AuthController extends Controller
 
     public function redirectToDashboard(): RedirectResponse
     {
-        return redirect()->route($this->dashboardRouteFor(Auth::user()?->role));
+        return redirect()->route($this->dashboardRouteForUser(Auth::user()));
     }
 
-    private function dashboardRouteFor($role)
+    private function dashboardRouteForUser(?User $user): string
     {
-        switch($role) {
+        switch ($user?->role) {
             case 'admin':
                 return 'admin.dashboard';
             case 'pharmacy':
-                return 'pharmacy.dashboard';
+                return $this->pharmacyDashboardRoute($user);
             default:
                 return 'user.dashboard';
         }
+    }
+
+    private function pharmacyDashboardRoute(User $user): string
+    {
+        if (! Schema::hasTable('pharmacies')) {
+            return 'pharmacy.subscription-required';
+        }
+
+        $pharmacy = Pharmacy::where('user_id', $user->id)->first();
+
+        if (! $pharmacy || $pharmacy->status !== 'approved' || ! $pharmacy->is_subscribed) {
+            return 'pharmacy.subscription-required';
+        }
+
+        return 'pharmacy.dashboard';
     }
 }

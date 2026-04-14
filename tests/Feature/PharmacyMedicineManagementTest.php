@@ -21,6 +21,11 @@ class PharmacyMedicineManagementTest extends TestCase
             'address' => 'Kenyatta Avenue',
             'phone' => '+254700100100',
             'status' => 'approved',
+            'is_subscribed' => true,
+            'subscription_plan' => 'Monthly Subscription',
+            'subscription_amount' => 5000,
+            'subscription_paid_at' => now(),
+            'subscribed_at' => now(),
         ]);
 
         $response = $this->actingAs($user)->post(route('pharmacy.medicines.store'), [
@@ -68,6 +73,11 @@ class PharmacyMedicineManagementTest extends TestCase
             'address' => 'Moi Avenue',
             'phone' => '+254700200200',
             'status' => 'approved',
+            'is_subscribed' => true,
+            'subscription_plan' => 'Monthly Subscription',
+            'subscription_amount' => 5000,
+            'subscription_paid_at' => now(),
+            'subscribed_at' => now(),
         ]);
 
         $this->actingAs($user)->post(route('pharmacy.medicines.store'), [

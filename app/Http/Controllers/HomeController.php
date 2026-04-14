@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Advert;
 use App\Models\Medicine;
 use App\Models\Pharmacy;
 use Illuminate\Http\Request;
@@ -17,6 +18,7 @@ class HomeController extends Controller
         $medicines = collect();
         $alternativeMedicines = collect();
         $nearbyPharmacies = collect();
+        $featuredAdverts = collect();
 
         if (Schema::hasTable('medicines') && Schema::hasTable('pharmacies')) {
             if ($query !== '') {
@@ -81,11 +83,32 @@ class HomeController extends Controller
                 ->get();
         }
 
+        if (Schema::hasTable('adverts') && Schema::hasTable('pharmacies')) {
+            $featuredAdverts = Advert::with('pharmacy:id,name,city,address,status,is_subscribed')
+                ->where('status', 'active')
+                ->where(function ($builder) {
+                    $builder->whereNull('starts_at')
+                        ->orWhere('starts_at', '<=', now());
+                })
+                ->where(function ($builder) {
+                    $builder->whereNull('ends_at')
+                        ->orWhere('ends_at', '>=', now());
+                })
+                ->whereHas('pharmacy', function ($builder) {
+                    $builder->where('status', 'approved')
+                        ->where('is_subscribed', true);
+                })
+                ->latest()
+                ->limit(4)
+                ->get();
+        }
+
         return view('welcome', [
             'searchQuery' => $query,
             'medicines' => $medicines,
             'alternativeMedicines' => $alternativeMedicines,
             'nearbyPharmacies' => $nearbyPharmacies,
+            'featuredAdverts' => $featuredAdverts,
         ]);
     }
 

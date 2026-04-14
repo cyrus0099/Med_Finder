@@ -17,8 +17,8 @@
         <div class="row align-items-center g-4">
           <div class="col-lg-8">
             <span class="badge bg-light text-success-emphasis mb-3">Admin Dashboard</span>
-            <h2 class="display-6 mb-3">Manage pharmacies, users, reports, and subscription approvals</h2>
-            <p class="mb-0 text-white-50">Track how many users are searching for medicine, review pending pharmacies, approve subscriptions after payment confirmation, and monitor reservation activity across MedFinder.</p>
+            <h2 class="display-6 mb-3">Manage pharmacies, adverts, users, reports, and subscription approvals</h2>
+            <p class="mb-0 text-white-50">Track reservation demand, approve pharmacy subscriptions, review pharmacy adverts, and remove pharmacy accounts when needed.</p>
           </div>
           <div class="col-lg-4">
             <div class="bg-white bg-opacity-10 rounded-4 p-4">
@@ -36,13 +36,13 @@
         <div class="card card-lg border-0 shadow-sm h-100"><div class="card-body"><p class="text-secondary mb-2">Registered users</p><h3 class="mb-1">{{ number_format($stats['users']) }}</h3><small class="text-secondary">People searching for nearby medicine availability</small></div></div>
       </div>
       <div class="col-md-6 col-xl-3">
-        <div class="card card-lg border-0 shadow-sm h-100"><div class="card-body"><p class="text-secondary mb-2">Pharmacies on MedFinder</p><h3 class="mb-1">{{ number_format($stats['pharmacies']) }}</h3><small class="text-secondary">Approved and pending pharmacies in the network</small></div></div>
+        <div class="card card-lg border-0 shadow-sm h-100"><div class="card-body"><p class="text-secondary mb-2">Pharmacies on MedFinder</p><h3 class="mb-1">{{ number_format($stats['pharmacies']) }}</h3><small class="text-secondary">Approved, pending, and suspended pharmacy accounts</small></div></div>
       </div>
       <div class="col-md-6 col-xl-3">
-        <div class="card card-lg border-0 shadow-sm h-100"><div class="card-body"><p class="text-secondary mb-2">Pending pharmacies</p><h3 class="mb-1">{{ number_format($stats['pendingPharmacies']) }}</h3><small class="text-secondary">Subscription approvals awaiting payment confirmation</small></div></div>
+        <div class="card card-lg border-0 shadow-sm h-100"><div class="card-body"><p class="text-secondary mb-2">Reservations made</p><h3 class="mb-1">{{ number_format($stats['reservations']) }}</h3><small class="text-secondary">All medicine reservations created by patients</small></div></div>
       </div>
       <div class="col-md-6 col-xl-3">
-        <div class="card card-lg border-0 shadow-sm h-100"><div class="card-body"><p class="text-secondary mb-2">Reservations made</p><h3 class="mb-1">{{ number_format($stats['reservations']) }}</h3><small class="text-secondary">All medicine reservations created by users</small></div></div>
+        <div class="card card-lg border-0 shadow-sm h-100"><div class="card-body"><p class="text-secondary mb-2">Active adverts</p><h3 class="mb-1">{{ number_format($stats['activeAdverts']) }}</h3><small class="text-secondary">Live promotions published by subscribed pharmacies</small></div></div>
       </div>
     </section>
 
@@ -70,7 +70,7 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
               <div>
                 <h4 class="mb-1">Manage pharmacies</h4>
-                <p class="text-secondary mb-0">Approve subscriptions after payment is confirmed and monitor current pharmacy onboarding.</p>
+                <p class="text-secondary mb-0">Approve subscriptions, suspend access, or completely remove pharmacy accounts.</p>
               </div>
             </div>
 
@@ -84,7 +84,8 @@
                       <th>Pharmacy</th>
                       <th>Owner</th>
                       <th>Payment</th>
-                      <th>Action</th>
+                      <th>Status</th>
+                      <th>Remove</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -105,10 +106,10 @@
                               <input type="text" name="subscription_plan" class="form-control form-control-sm" value="Monthly Subscription" placeholder="Subscription plan">
                             </div>
                             <div class="col-sm-6">
-                              <input type="number" name="subscription_amount" class="form-control form-control-sm" min="0.01" step="0.01" placeholder="Amount paid">
+                              <input type="number" name="subscription_amount" class="form-control form-control-sm" min="0.01" step="0.01" value="5000" placeholder="Amount paid">
                             </div>
                             <div class="col-12">
-                              <button type="submit" class="btn btn-sm btn-success">Approve Subscription</button>
+                              <button type="submit" class="btn btn-sm btn-success">Approve subscription</button>
                             </div>
                           </form>
                         </td>
@@ -119,6 +120,13 @@
                             @method('PATCH')
                             <input type="hidden" name="status" value="suspended">
                             <button type="submit" class="btn btn-sm btn-outline-danger">Suspend</button>
+                          </form>
+                        </td>
+                        <td>
+                          <form method="POST" action="{{ route('admin.pharmacies.destroy', $pharmacy) }}">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-danger">Delete pharmacy</button>
                           </form>
                         </td>
                       </tr>
@@ -211,7 +219,7 @@
           <div class="card-body">
             <h4 class="mb-4">Latest pharmacies</h4>
             @if ($pharmacySnapshot->isEmpty())
-              <div class="alert alert-light border mb-0">No pharmacy records yet. Pending and subscribed pharmacies will show here after migration.</div>
+              <div class="alert alert-light border mb-0">No pharmacy records yet.</div>
             @else
               <div class="d-flex flex-column gap-3">
                 @foreach ($pharmacySnapshot as $pharmacy)
@@ -223,9 +231,9 @@
                         <small class="text-secondary">{{ $pharmacy->subscription_plan ?: 'No subscription plan recorded' }}</small>
                       </div>
                       <div class="text-end">
-                        <span class="badge {{ $pharmacy->status === 'approved' ? 'bg-success-subtle text-success-emphasis' : 'bg-warning-subtle text-warning-emphasis' }} text-capitalize">{{ $pharmacy->status }}</span>
+                        <span class="badge {{ $pharmacy->status === 'approved' ? 'bg-success-subtle text-success-emphasis' : ($pharmacy->status === 'suspended' ? 'bg-danger-subtle text-danger-emphasis' : 'bg-warning-subtle text-warning-emphasis') }} text-capitalize">{{ $pharmacy->status }}</span>
                         <div class="small text-secondary mt-2">
-                          {{ $pharmacy->is_subscribed ? 'Paid KES '.number_format((float) ($pharmacy->subscription_amount ?? 0), 2) : 'Awaiting activation' }}
+                          {{ $pharmacy->is_subscribed ? 'Paid UGX '.number_format((float) ($pharmacy->subscription_amount ?? 0), 2) : 'Awaiting activation' }}
                         </div>
                         <form method="POST" action="{{ route('admin.pharmacies.update-status', $pharmacy) }}" class="mt-2">
                           @csrf
@@ -235,6 +243,11 @@
                             {{ $pharmacy->status === 'suspended' ? 'Reactivate' : 'Suspend' }}
                           </button>
                         </form>
+                        <form method="POST" action="{{ route('admin.pharmacies.destroy', $pharmacy) }}" class="mt-2">
+                          @csrf
+                          @method('DELETE')
+                          <button type="submit" class="btn btn-sm btn-danger">Delete pharmacy</button>
+                        </form>
                       </div>
                     </div>
                   </div>
@@ -243,14 +256,64 @@
             @endif
           </div>
         </div>
+      </div>
+    </section>
 
+    <section class="row g-4">
+      <div class="col-xl-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <h4 class="mb-4">Recent adverts</h4>
+            @if ($recentAdverts->isEmpty())
+              <div class="alert alert-light border mb-0">No adverts have been created by pharmacies yet.</div>
+            @else
+              <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                  <thead>
+                    <tr>
+                      <th>Pharmacy</th>
+                      <th>Advert</th>
+                      <th>Status</th>
+                      <th>Period</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @foreach ($recentAdverts as $advert)
+                      <tr>
+                        <td>
+                          <div class="fw-semibold">{{ $advert->pharmacy?->name ?? 'Unknown pharmacy' }}</div>
+                          <small class="text-secondary">{{ $advert->pharmacy?->city ?? 'No city recorded' }}</small>
+                        </td>
+                        <td>
+                          <div class="fw-semibold">{{ $advert->title }}</div>
+                          <small class="text-secondary">{{ \Illuminate\Support\Str::limit($advert->content, 70) }}</small>
+                        </td>
+                        <td><span class="badge {{ $advert->status === 'active' ? 'bg-success-subtle text-success-emphasis' : 'bg-secondary-subtle text-secondary-emphasis' }} text-capitalize">{{ $advert->status }}</span></td>
+                        <td>
+                          <small class="text-secondary">
+                            {{ $advert->starts_at?->format('M d, Y') ?? 'Not set' }}
+                            to
+                            {{ $advert->ends_at?->format('M d, Y') ?? 'Open ended' }}
+                          </small>
+                        </td>
+                      </tr>
+                    @endforeach
+                  </tbody>
+                </table>
+              </div>
+            @endif
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-6 d-flex flex-column gap-4">
         <div class="card border-0 shadow-sm">
           <div class="card-body">
             <h4 class="mb-4">Recent reservations</h4>
             @if ($recentReservations->isEmpty())
-              <div class="alert alert-light border mb-0">No reservations yet. Once users start reserving medicine, their requests will appear here.</div>
+              <div class="alert alert-light border mb-0">No reservations yet. Once patients start reserving medicine, their requests will appear here.</div>
             @else
-              <div class="table-responsive mb-4">
+              <div class="table-responsive">
                 <table class="table align-middle mb-0">
                   <thead>
                     <tr>
@@ -271,7 +334,11 @@
                 </table>
               </div>
             @endif
+          </div>
+        </div>
 
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
             <h4 class="mb-4">Recent patient searches</h4>
             <div class="d-flex flex-column gap-2">
               @forelse($searchLogs as $log)
@@ -283,7 +350,7 @@
                   </div>
                 </div>
               @empty
-                <p class="text-muted text-center py-4">No recent searches found.</p>
+                <p class="text-muted text-center py-4 mb-0">No recent searches found.</p>
               @endforelse
             </div>
           </div>

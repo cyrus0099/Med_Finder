@@ -49,4 +49,9 @@ class Pharmacy extends Model
     {
         return $this->hasMany(Reservation::class);
     }
+
+    public function adverts(): HasMany
+    {
+        return $this->hasMany(Advert::class);
+    }
 }

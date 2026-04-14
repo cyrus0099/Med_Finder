@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Advert;
 use App\Models\Medicine;
 use App\Models\Pharmacy;
 use App\Models\Reservation;
@@ -9,6 +10,7 @@ use App\Models\User;
 use App\Models\search_log;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
@@ -21,6 +23,7 @@ class AdminController extends Controller
         $hasMedicines = Schema::hasTable('medicines');
         $hasReservations = Schema::hasTable('reservations');
         $hasSearchLogs = Schema::hasTable('search_logs');
+        $hasAdverts = Schema::hasTable('adverts');
 
         $stats = [
             'users' => $hasUsers ? User::count() : 0,
@@ -31,6 +34,8 @@ class AdminController extends Controller
             'reservations' => $hasReservations ? Reservation::count() : 0,
             'activeReservations' => $hasReservations ? Reservation::whereIn('status', ['pending', 'confirmed'])->count() : 0,
             'fulfilledReservations' => $hasReservations ? Reservation::where('status', 'fulfilled')->count() : 0,
+            'adverts' => $hasAdverts ? Advert::count() : 0,
+            'activeAdverts' => $hasAdverts ? Advert::where('status', 'active')->count() : 0,
         ];
 
         $medicineCategories = $hasMedicines
@@ -39,6 +44,13 @@ class AdminController extends Controller
 
         $recentReservations = $hasReservations
             ? Reservation::with(['user:id,name', 'pharmacy:id,name', 'medicine:id,name'])
+                ->latest()
+                ->take(6)
+                ->get()
+            : collect();
+
+        $recentAdverts = $hasAdverts
+            ? Advert::with('pharmacy:id,name,city')
                 ->latest()
                 ->take(6)
                 ->get()
@@ -112,12 +124,18 @@ class AdminController extends Controller
                 'value' => number_format($stats['fulfilledReservations']),
                 'note' => 'Completed reservation requests across the platform.',
             ],
+            [
+                'label' => 'Active adverts',
+                'value' => number_format($stats['activeAdverts']),
+                'note' => 'Current pharmacy promotions visible in the system.',
+            ],
         ]);
 
         return view('admin.dashboard', [
             'stats' => $stats,
             'medicineCategories' => $medicineCategories,
             'recentReservations' => $recentReservations,
+            'recentAdverts' => $recentAdverts,
             'pharmacySnapshot' => $pharmacySnapshot,
             'pendingPharmacyApprovals' => $pendingPharmacyApprovals,
             'userSnapshot' => $userSnapshot,
@@ -168,6 +186,22 @@ class AdminController extends Controller
         $pharmacy->update($updates);
 
         return back()->with('status', 'Pharmacy status updated successfully.');
+    }
+
+    public function destroyPharmacy(Pharmacy $pharmacy): RedirectResponse
+    {
+        DB::transaction(function () use ($pharmacy) {
+            $owner = $pharmacy->owner;
+            $ownerPharmacyCount = $owner?->pharmacies()->count() ?? 0;
+
+            $pharmacy->delete();
+
+            if ($owner && $owner->role === 'pharmacy' && $ownerPharmacyCount <= 1) {
+                $owner->delete();
+            }
+        });
+
+        return back()->with('status', 'Pharmacy removed successfully.');
     }
 
     public function updateUserStatus(Request $request, User $user): RedirectResponse

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Advert;
 use App\Models\Medicine;
 use App\Models\Pharmacy;
 use App\Models\User;
@@ -75,5 +76,35 @@ class HomeMedicineSearchTest extends TestCase
         $response->assertSee('Nearby Pharmacies');
         $response->assertSee('Neighborhood Pharmacy');
         $response->assertSee('In-stock medicines');
+    }
+
+    public function test_home_page_shows_active_pharmacy_adverts(): void
+    {
+        $owner = User::factory()->create(['role' => 'pharmacy']);
+        $pharmacy = Pharmacy::create([
+            'user_id' => $owner->id,
+            'name' => 'Spotlight Pharmacy',
+            'city' => 'Kampala',
+            'address' => 'Parliament Avenue',
+            'status' => 'approved',
+            'is_subscribed' => true,
+        ]);
+
+        Advert::create([
+            'pharmacy_id' => $pharmacy->id,
+            'title' => 'Free blood pressure check',
+            'content' => 'Visit Spotlight Pharmacy this week for a free blood pressure check with any purchase.',
+            'cta_link' => 'https://example.com/campaign',
+            'starts_at' => now()->subDay(),
+            'ends_at' => now()->addDays(3),
+            'status' => 'active',
+        ]);
+
+        $response = $this->get('/');
+
+        $response->assertOk();
+        $response->assertSee('Pharmacy Spotlight');
+        $response->assertSee('Free blood pressure check');
+        $response->assertSee('Spotlight Pharmacy');
     }
 }

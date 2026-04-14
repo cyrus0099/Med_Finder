@@ -30,13 +30,21 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
         ->name('pharmacies.approve-subscription');
     Route::patch('/pharmacies/{pharmacy}/status', [AdminController::class, 'updatePharmacyStatus'])
         ->name('pharmacies.update-status');
+    Route::delete('/pharmacies/{pharmacy}', [AdminController::class, 'destroyPharmacy'])
+        ->name('pharmacies.destroy');
     Route::patch('/users/{user}/status', [AdminController::class, 'updateUserStatus'])
         ->name('users.update-status');
 });
 
 Route::prefix('pharmacy')->name('pharmacy.')->middleware(['auth', 'role:pharmacy'])->group(function () {
-    Route::get('/dashboard', [PharmacyController::class, 'dashboard'])->name('dashboard');
-    Route::post('/medicines', [PharmacyController::class, 'storeMedicine'])->name('medicines.store');
+    Route::get('/subscription-required', [PharmacyController::class, 'subscriptionRequired'])->name('subscription-required');
+
+    Route::middleware('pharmacy.subscription')->group(function () {
+        Route::get('/dashboard', [PharmacyController::class, 'dashboard'])->name('dashboard');
+        Route::post('/medicines', [PharmacyController::class, 'storeMedicine'])->name('medicines.store');
+        Route::get('/adverts', [PharmacyController::class, 'adverts'])->name('adverts.index');
+        Route::post('/adverts', [PharmacyController::class, 'storeAdvert'])->name('adverts.store');
+    });
 });
 
 Route::prefix('user')->name('user.')->middleware(['auth', 'role:user'])->group(function () {
